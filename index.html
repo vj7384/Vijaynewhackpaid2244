@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RIOCHEATS V2</title>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            text-align: center;
+            background: linear-gradient(to right, #121212, #1f1f1f);
+            color: white;
+            padding: 20px;
+            text-transform: uppercase;
+        }
+        .title-box {
+            display: inline-block;
+            background: linear-gradient(145deg, #0072ff, #00c6ff);
+            color: white;
+            padding: 15px 25px;
+            font-size: 24px;
+            font-weight: bold;
+            border-radius: 8px;
+            letter-spacing: 2px;
+        }
+        .container {
+            background: #1a1a1a;
+            padding: 25px;
+            border-radius: 12px;
+            max-width: 400px;
+            margin: auto;
+            transition: 0.3s;
+        }
+        .input-label {
+            color: cyan;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        input {
+            width: 50px;
+            height: 40px;
+            font-size: 22px;
+            text-align: center;
+            margin: 8px;
+            border: 2px solid cyan;
+            background: black;
+            color: cyan;
+            border-radius: 5px;
+        }
+        .button-group {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .predict-btn, .clear-btn {
+            width: 150px;
+            text-align: center;
+            padding: 12px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border: none;
+            transition: 0.3s;
+        }
+        .predict-btn {
+            background: linear-gradient(145deg, #0072ff, #d500f9);
+            color: white;
+        }
+        .predict-btn:hover {
+            background: linear-gradient(145deg, #0056b3, #9c27b0);
+            transform: scale(1.05);
+            box-shadow: 0px 0px 10px rgba(0, 114, 255, 0.7);
+        }
+        .clear-btn {
+            background: linear-gradient(145deg, #ffcc00, #ff9900);
+            color: black;
+        }
+        .clear-btn:hover {
+            background: linear-gradient(145deg, #d4af37, #ffb700);
+            transform: scale(1.05);
+            box-shadow: 0px 0px 10px rgba(255, 215, 0, 0.7);
+        }
+        .result-box {
+            display: none;
+            background: linear-gradient(145deg, #0072ff, #00c6ff);
+            color: white;
+            padding: 15px 25px;
+            font-size: 24px;
+            font-weight: bold;
+            border-radius: 8px;
+            letter-spacing: 2px;
+            margin-top: 15px;
+            border: 3px solid #00c6ff;
+        }
+        #loading {
+            display: none;
+            margin-top: 15px;
+        }
+        #loading img {
+            width: 50px;
+        }
+        #time-india {
+            font-size: 20px;
+            color: cyan;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        .alert-box {
+            display: none;
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 0, 0, 0.9);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <h2 class="title-box">RIOCHEATS V2</h2>
+    
+    <div class="container">
+        <p class="input-label">THE LAST 6 RESULTS (B OR S)</p>
+        <input type="text" id="r1" maxlength="1" oninput="moveCursor(1, event)">
+        <input type="text" id="r2" maxlength="1" oninput="moveCursor(2, event)">
+        <input type="text" id="r3" maxlength="1" oninput="moveCursor(3, event)">
+        <input type="text" id="r4" maxlength="1" oninput="moveCursor(4, event)">
+        <input type="text" id="r5" maxlength="1" oninput="moveCursor(5, event)">
+        <input type="text" id="r6" maxlength="1" oninput="moveCursor(6, event)">
+        
+        <div class="button-group">
+            <button class="predict-btn" onclick="predictNext()">NEXT</button>
+            <button class="clear-btn" onclick="clearInputs()">CLEAR</button>
+        </div>
+
+        <div id="loading">
+            <img src="https://i.gifer.com/ZZ5H.gif" alt="Loading...">
+            <p>Predicting...</p>
+        </div>
+
+        <p id="prediction" class="result-box"></p>
+
+        <p id="time-india"><strong>NEXT UPDATE IN:</strong> <span id="remaining-seconds">60</span> SECONDS</p>
+    </div>
+
+    <div id="custom-alert" class="alert-box"></div>
+
+    <script>
+        let patternDatabase = {};
+
+        function showAlert(message) {
+            let alertBox = document.getElementById("custom-alert");
+            alertBox.innerText = message;
+            alertBox.style.display = "block";
+            setTimeout(() => { alertBox.style.display = "none"; }, 2000);
+        }
+
+        function predictNext() {
+            let inputs = [];
+            for (let i = 1; i <= 6; i++) {
+                let value = document.getElementById("r" + i).value.toUpperCase();
+                if (value !== "B" && value !== "S") {
+                    showAlert("⚠️ PLEASE FILL ALL BOXES WITH 'B' OR 'S' BEFORE PREDICTING!");
+                    return;
+                }
+                inputs.push(value);
+            }
+
+            let pattern = inputs.join("-");
+            let predictionBox = document.getElementById("prediction");
+            let loading = document.getElementById("loading");
+
+            predictionBox.style.display = "none";
+            loading.style.display = "block";
+
+            setTimeout(() => {
+                let predicted = patternDatabase[pattern] || (Math.random() > 0.5 ? "B" : "S");
+                patternDatabase[pattern] = predicted;
+
+                loading.style.display = "none";
+                predictionBox.innerText = " RESULT: " + predicted;
+                predictionBox.style.display = "block";
+            }, 1500);
+        }
+
+        function clearInputs() {
+            for (let i = 1; i <= 6; i++) {
+                document.getElementById("r" + i).value = "";
+            }
+            document.getElementById("prediction").style.display = "none";
+            document.getElementById("r1").focus();
+        }
+
+        function moveCursor(index, event) {
+            let input = document.getElementById("r" + index);
+            input.value = input.value.toUpperCase();
+            if (!["B", "S"].includes(input.value)) input.value = "";
+            if (index < 6) document.getElementById("r" + (index + 1)).focus();
+        }
+
+        function updateSeconds() {
+            let now = new Date();
+            document.getElementById("remaining-seconds").innerText = 60 - now.getSeconds();
+        }
+        setInterval(updateSeconds, 1000);
+    </script>
+
+</body>
+</html>
